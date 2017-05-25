@@ -1,0 +1,17 @@
+0ece24c71dca6a9484373007c3560ad8 *DESCRIPTION
+85e64967a582e80e9d58549be26b654e *NAMESPACE
+1e6a6fcf6ff87a8f1aa7e7daa2bbc703 *R/data_cleaner.R
+5e9cd521d7e14264b84ba9df582f5e3f *R/plot_helper.R
+b7e57fdbb5bca0ad76f4f45a94a15da8 *R/visualize.R
+bfe361b4deb85effd1c2fdc3cedb4051 *README.md
+54ba83c3293290615041483d1b79a126 *build/vignette.rds
+3c95e33b1553fc41576ce64460c59c33 *inst/doc/plot_timeline.R
+84432e9a76ef91f8c0915958871e975d *inst/doc/plot_timeline.Rmd
+e1cb0cbc5e3b9c3d15b4356ca15fa33a *inst/doc/plot_timeline.html
+cc2e68be3e402f6676c715d5b07add25 *inst/extdata/delhi_air_pollution.csv
+2fdfe38be05aeddd2c605b4ed8993aa9 *inst/extdata/test_data.csv
+18aa5dcd3c6e217d90f7d708be95c473 *man/match_grep.Rd
+c62c0e8c42a4822cbb5a6a8e151476f1 *man/plot_timeline.Rd
+3ee8d3d02c9b4688684e8210608c36ca *tests/testthat.R
+ebf54b01a473d3d242eb68b418da7be1 *tests/testthat/test-visualize.R
+84432e9a76ef91f8c0915958871e975d *vignettes/plot_timeline.Rmd
