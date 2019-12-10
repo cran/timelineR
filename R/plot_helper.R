@@ -8,7 +8,7 @@ generate_state_plot_layer <- function(data_to_plot) {
   end_values = data_to_plot_reduced[2:nrow(data_to_plot_reduced), 1]
   value = NULL # cran check 
   
-  ggplot() + geom_rect(data=data_to_plot_reduced[-nrow(data_to_plot_reduced),],
+  ggplot() + geom_rect(data = data_to_plot_reduced[-nrow(data_to_plot_reduced),],
                        aes(xmin = start_values, xmax = end_values,
                        ymin = 0L, ymax = 1L, fill = value)) 
 }
@@ -84,6 +84,7 @@ check_colors_mapping <- function(state_factors, user_defined_mapping){
 }
 
 add_colors_to_state_plots <- function(all_plots, color_mapping, unique_state_factors){
+  
   names_all_plots <- names(all_plots)
   all_plots <- lapply(1:length(all_plots), function(i) {
     basic_plot <- all_plots[[i]]
@@ -228,10 +229,10 @@ align_the_plots <- function(all_plots, overlap_plots_grob, plot_size_ratios, ord
 }
 
 
-draw_the_plots <- function(grob_output, save_path, plot_output = T){
+draw_the_plots <- function(grob_output, save_path, plot_output = T, output_width, output_height){
   if(!is.null(save_path)) {
     flog.info("Writing image to file as PNG in: ",  save_path)
-    png(save_path, width = 1500, height = 800)
+    png(save_path, width = output_width, height = output_height)
     grid::grid.draw(grob_output)
     dev.off() 
   }
@@ -243,27 +244,37 @@ draw_the_plots <- function(grob_output, save_path, plot_output = T){
 }
 
 # If need arises to add xlabel, they can be added as prefix by passing to this function
-add_pretty_breaks_and_labels_to_one_oplot <- function(ggobject, prt_brks, xlabels){
+add_pretty_breaks_and_labels_to_one_oplot <- function(ggobject, labels_list){
+  ggobject + xlab(labels_list$xlabel) + 
+    scale_x_datetime(breaks = labels_list$prt_brks, labels = labels_list$brk_labels)
+}
+
+
+get_pretty_breaks_labels <- function(time_limits){
+  prt_brks <- base::pretty(n = 10, x = time_limits)
+  xlabels <- attr(prt_brks, "labels")
+  
   break_patterns = list(
     "Time (HH:MM:SS)"   = "^[[:digit:]]+:[[:digit:]]+:[[:digit:]]+$",
     "Time (HH:MM)"      = "^[[:digit:]]+:[[:digit:]]+$",
     "Time (s)"          = "^[[:digit:]]+$",
     "Time (Date HH:MM)" = "^[[:alpha:]]+ [[:digit:]]+ [[:digit:]]+:[[:digit:]]+$",
-    "Time (Date)"       = "^[[:alpha:]]+ [[:digit:]]+$"
+    "Time (Date)"       = "^[[:alpha:]]+ [[:digit:]]+$",
+    "Time (Date-Month)" = "^[[:alpha:]]+"
   )
   which_pattern = which(sapply(break_patterns, function(x) str_detect(xlabels[2], x)))
   if(length(which_pattern) == 0)  stop("Coudn't find break pattern!")
   
   xlabels[1] <- as.character(prt_brks[1])
-  ggobject + xlab(names(which_pattern)[1]) + scale_x_datetime(breaks = prt_brks, labels = xlabels)
+  list(prt_brks = prt_brks, brk_labels = xlabels, xlabel = names(which_pattern)[1])
 }
 
+
 add_pretty_breaks_and_xlabel <- function(all_plots, time_limits) {
-  prt_brks <- base::pretty(n = 10, x = time_limits)
-  xlabels <- attr(prt_brks, "labels")
+  labels_list <- get_pretty_breaks_labels(time_limits)
 
   sapply(X = all_plots, FUN = add_pretty_breaks_and_labels_to_one_oplot,
-         prt_brks, xlabels, USE.NAMES = TRUE, simplify = F)
+         labels_list, USE.NAMES = TRUE, simplify = F)
   
 }
 
@@ -314,4 +325,26 @@ create_overlapping_plot <- function(state_plot, numeric_plot, title_name){
   
   combined_grob$widths[3] = numeric_grob_table$widths[3]
   return(combined_grob)
+}
+
+#' @title Generate color mapping for all plots
+#' @description When all the plots have the same set of values, instead of typing the color mapping for all plots, default color to value mapping can be given which will generate the color mapping for all the plots based on the unique values present in each column
+#' @param df Data frame to be plotted using plot_timeline
+#' @param default_color_mapping Value to color mapping for all the plots in the data frame. ex: default_color_mapping <- c("0" = "#BCBEC0", "1" = "#1279C6")
+#' @usage 
+#' generate_color_mapping(df, default_color_mapping)
+#' @export
+
+generate_color_mapping <- function(df, default_color_mapping) {
+  timestamp = NULL
+  df <- df %>% dplyr::select(-timestamp)
+  cols_name <- colnames(df)
+  
+  color_mapping <- lapply(cols_name, function(l) {
+    unique_values_cols <- unique(df[[l]])
+    req_mapping <- default_color_mapping[names(default_color_mapping) %in% unique_values_cols]
+    req_mapping
+  })
+  names(color_mapping) <- cols_name
+  color_mapping
 }
